@@ -25,10 +25,10 @@ pipeline {
                 sh 'mvn test -Dgroups=regression'
             }
         }
-
     }
 
     post {
+
         always {
             echo 'CI pipeline completed'
         }
@@ -39,10 +39,6 @@ pipeline {
 
         failure {
             echo 'Pipeline failed'
-        }
-
-        always {
-            echo 'CI pipeline completed'
         }
     }
 }
