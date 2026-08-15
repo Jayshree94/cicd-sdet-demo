@@ -8,18 +8,41 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
+        stage('Build') {
             steps {
-                echo 'Source code checked out from GitHub'
+                sh 'mvn clean compile'
             }
         }
 
-        stage('Build and Test') {
+        stage('Smoke Tests') {
             steps {
-                sh 'mvn -version'
-                sh 'mvn clean test'
+                sh 'mvn test -Dgroups=smoke'
             }
         }
 
+        stage('Regression Tests') {
+            steps {
+                sh 'mvn test -Dgroups=regression'
+            }
+        }
+
+    }
+
+    post {
+        always {
+            echo 'CI pipeline completed'
+        }
+
+        success {
+            echo 'All tests passed'
+        }
+
+        failure {
+            echo 'Pipeline failed'
+        }
+
+        always {
+            echo 'CI pipeline completed'
+        }
     }
 }
