@@ -8,8 +8,7 @@ public class SmokeTest {
     @Test
     public void verifyApplication() {
 
-        System.out.println("Running Smoke Test");
-
+        System.out.println("Running Smoke Test from CI");
         Assert.assertTrue(true);
 
     }
