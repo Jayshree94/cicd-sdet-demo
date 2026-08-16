@@ -66,7 +66,7 @@ pipeline {
         }
 
         success {
-            echo 'Build, tests and Docker image pushed successfully'
+            echo 'Build, testss and Docker image pushed successfully'
         }
 
         failure {
