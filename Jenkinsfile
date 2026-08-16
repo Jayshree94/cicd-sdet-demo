@@ -2,15 +2,11 @@ pipeline {
 
     agent any
 
-    tools {
-        maven 'Maven-3.9.9'
-    }
-
     stages {
 
-        stage('Build') {
+        stage('Docker Build') {
             steps {
-                sh 'mvn clean compile'
+                sh 'docker build -t cicd-sdet-demo:jenkins .'
             }
         }
 
@@ -20,13 +16,13 @@ pipeline {
 
                 stage('Smoke Tests') {
                     steps {
-                        sh 'mvn clean test -Dgroups=smoke'
+                        sh 'docker run --rm cicd-sdet-demo:jenkins mvn test -Dgroups=smoke'
                     }
                 }
 
                 stage('Regression Tests') {
                     steps {
-                        sh 'mvn test -Dgroups=regression'
+                        sh 'docker run --rm cicd-sdet-demo:jenkins mvn test -Dgroups=regression'
                     }
                 }
             }
