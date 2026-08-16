@@ -41,19 +41,20 @@ pipeline {
 
 
         // ==========================================
-        // 3. BUILD DOCKER IMAGE
+        // 3. DOCKER BUILD
         // ==========================================
         stage('Docker Build') {
+
             steps {
 
                 sh '''
-                    echo "Building Docker image..."
+                    echo "======================================"
+                    echo "Building Docker image"
+                    echo "======================================"
 
                     docker build \
                         -t jayshreekharate/cicd-sdet-demo:${BUILD_NUMBER} \
                         .
-
-                    echo "Creating latest tag..."
 
                     docker tag \
                         jayshreekharate/cicd-sdet-demo:${BUILD_NUMBER} \
@@ -64,9 +65,10 @@ pipeline {
 
 
         // ==========================================
-        // 4. PUSH TO DOCKER HUB
+        // 4. DOCKER PUSH
         // ==========================================
         stage('Docker Push') {
+
             steps {
 
                 withCredentials([
@@ -78,24 +80,27 @@ pipeline {
                 ]) {
 
                     sh '''
-                        echo "Logging into Docker Hub..."
+                        echo "======================================"
+                        echo "Logging into Docker Hub"
+                        echo "======================================"
 
                         echo "$DOCKER_PASSWORD" | \
                             docker login \
                             -u "$DOCKER_USERNAME" \
                             --password-stdin
 
+
                         echo "Pushing build image..."
 
                         docker push \
                             jayshreekharate/cicd-sdet-demo:${BUILD_NUMBER}
+
 
                         echo "Pushing latest image..."
 
                         docker push \
                             jayshreekharate/cicd-sdet-demo:latest
 
-                        echo "Logging out..."
 
                         docker logout
                     '''
@@ -108,16 +113,22 @@ pipeline {
         // 5. DEPLOY
         // ==========================================
         stage('Deploy') {
+
             steps {
 
                 sh '''
-                    echo "Pulling latest application image..."
+                    echo "======================================"
+                    echo "Deploying application"
+                    echo "======================================"
+
+
+                    echo "Pulling latest image..."
 
                     docker pull \
                         jayshreekharate/cicd-sdet-demo:latest
 
 
-                    echo "Removing old application container..."
+                    echo "Removing old container..."
 
                     docker rm -f cicd-app 2>/dev/null || true
 
@@ -127,13 +138,16 @@ pipeline {
                     docker run -d \
                         --name cicd-app \
                         --network cicd-network \
-                        -p 8081:8081 \
                         jayshreekharate/cicd-sdet-demo:latest
 
 
-                    echo "Application container started."
+                    echo "Container started."
 
-                    docker ps --filter name=cicd-app
+
+                    echo "Container status:"
+
+                    docker ps \
+                        --filter name=cicd-app
                 '''
             }
         }
@@ -143,26 +157,34 @@ pipeline {
         // 6. VERIFY DEPLOYMENT
         // ==========================================
         stage('Verify Deployment') {
+
             steps {
 
                 sh '''
-                    echo "Waiting for application to start..."
+                    echo "======================================"
+                    echo "Verifying application"
+                    echo "======================================"
+
+
+                    echo "Waiting for Spring Boot application..."
 
 
                     for i in $(seq 1 30); do
 
                         echo "Attempt $i..."
 
+
                         if curl -fs http://cicd-app:8081/hello; then
 
                             echo ""
                             echo "======================================"
                             echo "Application is UP!"
-                            echo "Deployment verification successful!"
+                            echo "Deployment verification SUCCESS!"
                             echo "======================================"
 
                             exit 0
                         fi
+
 
                         sleep 2
 
@@ -170,10 +192,20 @@ pipeline {
 
 
                     echo "======================================"
-                    echo "Application failed to start"
+                    echo "APPLICATION FAILED TO START"
                     echo "======================================"
 
+
+                    echo "Container status:"
+
+                    docker ps -a \
+                        --filter name=cicd-app
+
+
+                    echo "Application logs:"
+
                     docker logs cicd-app
+
 
                     exit 1
                 '''
@@ -188,15 +220,23 @@ pipeline {
     post {
 
         always {
+            echo '======================================'
             echo 'CI/CD pipeline completed'
+            echo '======================================'
         }
 
         success {
-            echo 'Build, tests, Docker push and deployment successful!'
+            echo '======================================'
+            echo 'SUCCESS!'
+            echo 'Build + Tests + Docker + Deployment + Verification passed'
+            echo '======================================'
         }
 
         failure {
-            echo 'CI/CD pipeline failed!'
+            echo '======================================'
+            echo 'PIPELINE FAILED'
+            echo 'Check the stage that failed'
+            echo '======================================'
         }
     }
 }
