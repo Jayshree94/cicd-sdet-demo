@@ -145,7 +145,7 @@ pipeline {
         }
 
         success {
-            echo 'Build, testts, Docker push and deployment successful!'
+            echo 'Build, tests, Docker push and deployment successful!'
         }
 
         failure {
