@@ -8,18 +8,12 @@ pipeline {
 
     stages {
 
-        // ==========================================
-        // 1. BUILD
-        // ==========================================
         stage('Build') {
             steps {
                 sh 'mvn clean compile'
             }
         }
 
-        // ==========================================
-        // 2. RUN TESTS IN PARALLEL
-        // ==========================================
         stage('Automated Tests') {
 
             parallel {
@@ -38,9 +32,6 @@ pipeline {
             }
         }
 
-        // ==========================================
-        // 3. BUILD DOCKER IMAGE
-        // ==========================================
         stage('Docker Build') {
             steps {
                 sh '''
@@ -55,9 +46,6 @@ pipeline {
             }
         }
 
-        // ==========================================
-        // 4. PUSH IMAGE TO DOCKER HUB
-        // ==========================================
         stage('Docker Push') {
             steps {
 
@@ -87,46 +75,40 @@ pipeline {
             }
         }
 
-        // ==========================================
-        // 5. DEPLOY
-        // ==========================================
         stage('Deploy') {
             steps {
                 sh '''
-                    echo "Pulling latest image..."
+                    echo "Pulling application image..."
 
                     docker pull \
                         jayshreekharate/cicd-sdet-demo:latest
 
-                    echo "Stopping old application container..."
+                    echo "Removing previous application..."
 
                     docker rm -f cicd-app 2>/dev/null || true
 
-                    echo "Starting new application container..."
+                    echo "Starting new application..."
 
                     docker run -d \
                         --name cicd-app \
+                        --network cicd-network \
                         -p 8081:8081 \
                         jayshreekharate/cicd-sdet-demo:latest
 
-                    echo "Application container started."
+                    echo "Deployment started."
                 '''
             }
         }
 
-        // ==========================================
-        // 6. VERIFY DEPLOYMENT
-        // ==========================================
         stage('Verify Deployment') {
             steps {
                 sh '''
-                    echo "Waiting for application to start..."
-
-                    sleep 5
+                    echo "Waiting for Spring Boot application..."
+                    sleep 10
 
                     echo "Checking application..."
 
-                    curl -f http://localhost:8081/hello
+                    curl -f http://cicd-app:8081/hello
 
                     echo ""
                     echo "Deployment verification successful!"
@@ -135,9 +117,6 @@ pipeline {
         }
     }
 
-    // ==========================================
-    // POST ACTIONS
-    // ==========================================
     post {
 
         always {
