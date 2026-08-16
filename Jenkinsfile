@@ -2,11 +2,15 @@ pipeline {
 
     agent any
 
+    tools {
+        maven 'Maven-3.9.9'
+    }
+
     stages {
 
-        stage('Docker Build') {
+        stage('Build') {
             steps {
-                sh 'docker build -t cicd-sdet-demo:jenkins .'
+                sh 'mvn clean compile'
             }
         }
 
@@ -16,15 +20,22 @@ pipeline {
 
                 stage('Smoke Tests') {
                     steps {
-                        sh 'docker run --rm cicd-sdet-demo:jenkins mvn test -Dgroups=smoke'
+                        sh 'mvn clean test -Dgroups=smoke'
                     }
                 }
 
                 stage('Regression Tests') {
                     steps {
-                        sh 'docker run --rm cicd-sdet-demo:jenkins mvn test -Dgroups=regression'
+                        sh 'mvn test -Dgroups=regression'
                     }
                 }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t jayshreekharate/cicd-sdet-demo:${BUILD_NUMBER} .'
+                sh 'docker tag jayshreekharate/cicd-sdet-demo:${BUILD_NUMBER} jayshreekharate/cicd-sdet-demo:latest'
             }
         }
     }
@@ -32,11 +43,11 @@ pipeline {
     post {
 
         always {
-            echo 'CI pipeline completed'
+            echo 'CI/CD pipeline completed'
         }
 
         success {
-            echo 'All tests passed'
+            echo 'Build, tests and Docker image creation successful'
         }
 
         failure {
