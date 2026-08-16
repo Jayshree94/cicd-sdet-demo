@@ -14,7 +14,7 @@ pipeline {
             }
         }
 
-        stage('Automated Tests') {
+        stage('Automated Tests:') {
 
             parallel {
 
