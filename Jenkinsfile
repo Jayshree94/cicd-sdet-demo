@@ -38,6 +38,25 @@ pipeline {
                 sh 'docker tag jayshreekharate/cicd-sdet-demo:${BUILD_NUMBER} jayshreekharate/cicd-sdet-demo:latest'
             }
         }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        docker push jayshreekharate/cicd-sdet-demo:${BUILD_NUMBER}
+                        docker push jayshreekharate/cicd-sdet-demo:latest
+                        docker logout
+                    '''
+                }
+            }
+        }
     }
 
     post {
@@ -47,7 +66,7 @@ pipeline {
         }
 
         success {
-            echo 'Build, tests and Docker image creation successful'
+            echo 'Build, tests and Docker image pushed successfully'
         }
 
         failure {
