@@ -14,11 +14,15 @@ pipeline {
             }
         }
 
-        stage('Smoke Tests') {
-            steps {
-                sh 'mvn test -Dgroups=smoke'
-            }
-        }
+stage('Smoke Tests') {
+    steps {
+        sh 'pwd'
+        sh 'find src/test -type f -print'
+        sh 'mvn -version'
+        sh 'mvn help:effective-pom'
+        sh 'mvn clean test -Dgroups=smoke'
+    }
+}
 
         stage('Regression Tests') {
             steps {
