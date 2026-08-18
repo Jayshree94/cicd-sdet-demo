@@ -234,7 +234,7 @@ pipeline {
 
         failure {
             echo '=================================='
-            echo 'PIPELINE FAILED.'
+            echo 'PIPELINE FAILED'
             echo 'Check the stage that failed'
             echo '======================================'
         }
