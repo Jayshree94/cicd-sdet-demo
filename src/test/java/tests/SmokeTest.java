@@ -7,7 +7,7 @@ public class SmokeTest {
     @Test(groups = "smoke")
     public void verifyApplication() {
 
-        System.out.println("Running Smoke Test from CI example");
+        System.out.println("Running Smoke Test from CI example.");
         Assert.assertTrue(true);
 
     }
