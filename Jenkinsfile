@@ -163,17 +163,20 @@ stage('Kubernetes Tests') {
                 // ==========================================
         // 6. VERIFY DEPLOYMENT
         // ==========================================
-        stage('Verify Deployment') {
-stage('Verify Deployment') {
+stage('Verify Application') {
     steps {
         sh '''
             echo "======================================"
             echo "Verifying Kubernetes Deployment"
             echo "======================================"
 
+            echo "Checking pods..."
             kubectl get pods -l app=cicd-app
 
-            echo "Testing application through Kubernetes Service..."
+            echo "Checking service..."
+            kubectl get service cicd-app
+
+            echo "Testing application from inside Kubernetes..."
 
             kubectl run api-verification \
                 --rm \
@@ -183,12 +186,11 @@ stage('Verify Deployment') {
                 curl -f http://cicd-app:8081/hello
 
             echo "======================================"
-            echo "Application verification SUCCESS"
+            echo "APPLICATION VERIFICATION SUCCESS"
             echo "======================================"
         '''
     }
 }
-
 
     // ==========================================
     // POST ACTIONS
