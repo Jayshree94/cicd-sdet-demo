@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: cicd-app
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: cicd-app
+
+  template:
+    metadata:
+      labels:
+        app: cicd-app
+
+    spec:
+      containers:
+        - name: cicd-app
+          image: jayshreekharate/cicd-sdet-demo:app
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8081
