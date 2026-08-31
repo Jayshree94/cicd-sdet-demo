@@ -164,61 +164,30 @@ stage('Kubernetes Tests') {
         // 6. VERIFY DEPLOYMENT
         // ==========================================
         stage('Verify Deployment') {
+stage('Verify Deployment') {
+    steps {
+        sh '''
+            echo "======================================"
+            echo "Verifying Kubernetes Deployment"
+            echo "======================================"
 
-            steps {
+            kubectl get pods -l app=cicd-app
 
-                sh '''
-                    echo "======================================"
-                    echo "Verifying application"
-                    echo "======================================"
+            echo "Testing application through Kubernetes Service..."
 
+            kubectl run api-verification \
+                --rm \
+                --restart=Never \
+                --image=curlimages/curl:8.10.1 \
+                -- \
+                curl -f http://cicd-app:8081/hello
 
-                    echo "Waiting for Spring Boot application..."
-
-
-                    for i in $(seq 1 30); do
-
-                        echo "Attempt $i..."
-
-
-                        if curl -fs http://cicd-app:8081/hello; then
-
-                            echo ""
-                            echo "======================================"
-                            echo "Application is UP!"
-                            echo "Deployment verification SUCCESS!"
-                            echo "======================================"
-
-                            exit 0
-                        fi
-
-
-                        sleep 2
-
-                    done
-
-
-                    echo "======================================"
-                    echo "APPLICATION FAILED TO START"
-                    echo "======================================"
-
-
-                    echo "Container status:"
-
-                    docker ps -a \
-                        --filter name=cicd-app
-
-
-                    echo "Application logs:"
-
-                    docker logs cicd-app
-
-
-                    exit 1
-                '''
-            }
-        }
+            echo "======================================"
+            echo "Application verification SUCCESS"
+            echo "======================================"
+        '''
     }
+}
 
 
     // ==========================================
