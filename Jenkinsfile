@@ -134,48 +134,33 @@ stage('Kubernetes Tests') {
         // ==========================================
         // 5. DEPLOY
         // ==========================================
-        stage('Deploy') {
-
+        stage('Deploy to Kubernetes') {
             steps {
-
                 sh '''
                     echo "======================================"
-                    echo "Deploying application"
+                    echo "Deploying application to Kubernetes"
                     echo "======================================"
 
+                    echo "Updating Kubernetes Deployment image..."
 
-                    echo "Pulling latest image..."
+                    kubectl set image deployment/cicd-app \
+                        cicd-app=jayshreekharate/cicd-sdet-demo:${BUILD_NUMBER}
 
-                    docker pull \
-                        jayshreekharate/cicd-sdet-demo:latest
+                    echo "Waiting for rollout..."
 
+                    kubectl rollout status deployment/cicd-app --timeout=120s
 
-                    echo "Removing old container..."
+                    echo "======================================"
+                    echo "Deployment successful"
+                    echo "======================================"
 
-                    docker rm -f cicd-app 2>/dev/null || true
-
-
-                    echo "Starting new application container..."
-
-                    docker run -d \
-                        --name cicd-app \
-                        --network cicd-network \
-                        jayshreekharate/cicd-sdet-demo:latest
-
-
-                    echo "Container started."
-
-
-                    echo "Container status:"
-
-                    docker ps \
-                        --filter name=cicd-app
+                    kubectl get deployment cicd-app
+                    kubectl get pods -l app=cicd-app
+                    kubectl get service cicd-app
                 '''
             }
         }
-
-
-        // ==========================================
+                // ==========================================
         // 6. VERIFY DEPLOYMENT
         // ==========================================
         stage('Verify Deployment') {
