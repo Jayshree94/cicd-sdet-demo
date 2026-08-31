@@ -170,10 +170,10 @@ stage('Verify Application') {
             echo "Verifying Kubernetes Deployment"
             echo "======================================"
 
-            echo "Checking pods..."
+            echo "Checking application pods..."
             kubectl get pods -l app=cicd-app
 
-            echo "Checking service..."
+            echo "Checking application service..."
             kubectl get service cicd-app
 
             echo "Testing application from inside Kubernetes..."
