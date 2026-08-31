@@ -21,24 +21,46 @@ pipeline {
         // ==========================================
         // 2. AUTOMATED TESTS
         // ==========================================
-        stage('Automated Tests') {
+stage('Kubernetes Tests') {
+    steps {
+        sh '''
+            echo "======================================"
+            echo "Starting Kubernetes Test Execution"
+            echo "======================================"
 
-            parallel {
+            echo "Deleting previous test Jobs..."
+            kubectl delete job smoke-test regression-test --ignore-not-found=true
 
-                stage('Smoke Tests') {
-                    steps {
-                        sh 'mvn clean test -Dgroups=smoke'
-                    }
-                }
+            echo "Starting Smoke Test Job..."
+            kubectl apply -f k8s/test-job.yaml
 
-                stage('Regression Tests') {
-                    steps {
-                        sh 'mvn test -Dgroups=regression'
-                    }
-                }
-            }
-        }
+            echo "Starting Regression Test Job..."
+            kubectl apply -f k8s/regression-job.yaml
 
+            echo "Waiting for Smoke Test..."
+            kubectl wait --for=condition=complete job/smoke-test --timeout=120s
+
+            echo "Waiting for Regression Test..."
+            kubectl wait --for=condition=complete job/regression-test --timeout=120s
+
+            echo "======================================"
+            echo "SMOKE TEST RESULTS"
+            echo "======================================"
+
+            kubectl logs job/smoke-test
+
+            echo "======================================"
+            echo "REGRESSION TEST RESULTS"
+            echo "======================================"
+
+            kubectl logs job/regression-test
+
+            echo "======================================"
+            echo "KUBERNETES TESTS COMPLETED"
+            echo "======================================"
+        '''
+    }
+}
 
         // ==========================================
         // 3. DOCKER BUILD
